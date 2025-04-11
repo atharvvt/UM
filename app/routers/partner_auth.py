@@ -4,6 +4,7 @@ from app.utils.reset_utils import create_reset_token
 from app.schemas.auth_schema import PartnerLoginRequest, LoginResponse
 from app.utils.email_utils import send_reset_email
 from app.utils.security import hash_password, verify_password
+from app.utils.jwt import create_access_token
 from app.sb_client import supabase
 
 router = APIRouter()
@@ -13,15 +14,18 @@ def partner_login(request: PartnerLoginRequest):
     try:
         res = supabase.table("user_partner_admin").select("*").eq("email", request.email).eq("role", "partner_admin").single().execute()
         user = res.data
-        print(user)
-        print(res)
+
         if not user:
-            raise HTTPException(status_code=404, detail="Partner admin not found")
+            raise HTTPException(status_code=404, 
+            detail="Partner admin not found")
 
         if not verify_password(request.password, user["password"]):
             raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        token = create_access_token(data={"email": user["email"], "role": user["role"]})
+        
+        return {"access_token": token, "token_type": "bearer", "expires_in": 3600}
 
-        return {"message": "Login successful"}
     except Exception as e:
         print(f"Exception during login: {e}")
         raise HTTPException(status_code=500, detail="Login failed")

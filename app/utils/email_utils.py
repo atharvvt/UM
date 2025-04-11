@@ -4,7 +4,7 @@ from sendgrid.helpers.mail import Mail
 import urllib
 
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-FROM_EMAIL = "atharv27vt@gmail.com"
+FROM_EMAIL = os.getenv("FROM_EMAIL")
 FRONTEND_URL=os.getenv('FRONTEND_URL')
 
 def send_otp_email(email: str, otp: str):
